@@ -8,7 +8,7 @@ const clearButton = document.querySelector("#clear-button");
 
 function drawGrid(gridSize) {
 
-    const maxGridWidthHeight = 80;
+    const maxGridWidthHeight = 70;
     let divRows = [];
     let divsInRow = [];
 
@@ -22,8 +22,7 @@ function drawGrid(gridSize) {
             width: ${maxGridWidthHeight/gridSize}vw;
             max-width: ${maxGridWidthHeight/gridSize/1.25}rem;
             height: ${maxGridWidthHeight/gridSize}vw;
-            max-height: ${maxGridWidthHeight/gridSize/1.25}rem;
-            border: solid 1px black;`;
+            max-height: ${maxGridWidthHeight/gridSize/1.25}rem;`
             divsInRow[divsInRow.length-1].classList.add("square");
             divRows[i].appendChild(divsInRow[divsInRow.length-1]);
         }
@@ -94,7 +93,7 @@ function changeGridSize() {
 }
 
 function clear() {
-    const squares = document.querySelectorAll(".square")
+    const squares = document.querySelectorAll(".square");
     clearButton.addEventListener("click", () => {
         squares.forEach(square => {
             square.style.backgroundColor = "white";
