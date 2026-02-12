@@ -42,23 +42,21 @@ function randomNumberUpTo(number) {
     return Math.floor(Math.random() * number+1);
 }
 
-function isRainbowButtonClicked() {
-    let rainbowButtonClicks = 0;
-    rainbowButton.addEventListener("click", () => {
-        if (rainbowButton > 1) rainbowButtonClicks = 0;
-        rainbowButtonClicks++;
-    })
-    if (rainbowButtonClicks % 2 === 0) return true;
-    return false;
-}
-
 function draw() {
 
     let color = colorPicker.value;
+    let rainbowButtonClicks = 0;
     colorPicker.addEventListener("input", () => {
     color = colorPicker.value;
     })
 
+    rainbowButton.addEventListener("click", () => {
+        if (rainbowButton > 1) rainbowButtonClicks = 0;
+        rainbowButtonClicks++;
+    })
+
+    const squares = document.querySelectorAll(".square");
+    
     let holding = false;
 
     gridContainer.addEventListener("mousedown", (e) => {
@@ -71,7 +69,7 @@ function draw() {
     squares.forEach(square => {
         square.addEventListener("mouseover", (e) => {
             if (holding === true) {
-                if (isRainbowButtonClicked()) {
+                if (rainbowButtonClicks % 2 === 0) {
                     square.style.backgroundColor = color;
                 } else {
                     e.currentTarget.style.backgroundColor = `rgb(${randomNumberUpTo(255)}, ${randomNumberUpTo(255)}, ${randomNumberUpTo(255)})`;
@@ -107,7 +105,6 @@ function clear() {
 function createGrid() {
     let gridSize = gridSizeRangeSlider.value;
     drawGrid(gridSize);
-    const squares = document.querySelectorAll(".square");
     draw();
     gridSizeText.innerText = `${gridSize} x ${gridSize}`;
 
