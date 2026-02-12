@@ -60,3 +60,7 @@ body {
     place-content: center;
     height: 100vh;
 }
+
+#grid-container {
+    display: grid;
+}
