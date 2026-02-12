@@ -96,7 +96,7 @@ function clear() {
     const squares = document.querySelectorAll(".square");
     clearButton.addEventListener("click", () => {
         squares.forEach(square => {
-            square.style.backgroundColor = "white";
+            square.style.backgroundColor = "var(--white)";
         });
     })
 }
