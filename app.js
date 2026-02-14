@@ -4,10 +4,14 @@ const gridSizeText = document.querySelector("#grid-size-text");
 const colorPicker = document.querySelector("#color-picker");
 const rainbowButton = document.querySelector("#rainbow-button");
 const darkenButton = document.querySelector("#darken-button");
+const eraserButton = document.querySelector("#eraser-button");
 const clearButton = document.querySelector("#clear-button");
+let squares = document.querySelectorAll(".square");
+
+let isHoldingMouse = false;
+let gridSize = gridSizeRangeSlider.value;
 
 function drawGrid(gridSize) {
-
     const maxGridWidthHeight = 70;
     let divRows = [];
     let divsInRow = [];
@@ -22,11 +26,14 @@ function drawGrid(gridSize) {
             width: ${maxGridWidthHeight/gridSize}vw;
             max-width: ${maxGridWidthHeight/gridSize/1.25}rem;
             height: ${maxGridWidthHeight/gridSize}vw;
-            max-height: ${maxGridWidthHeight/gridSize/1.25}rem;`
+            max-height: ${maxGridWidthHeight/gridSize/1.25}rem;
+            background-color: var(--square-bg-color);
+            filter: brightness(100%);`;
             divsInRow[divsInRow.length-1].classList.add("square");
             divRows[i].appendChild(divsInRow[divsInRow.length-1]);
         }
     }
+    squares = document.querySelectorAll(".square");
     divRows = [];
     divsInRow = [];
 }
@@ -37,79 +44,96 @@ function removeGrid() {
     }
 }
 
+function updateGridSize() {
+    gridSize = this.value;
+    gridSizeText.innerText = `${gridSize} x ${gridSize}`;
+}
+
+function redrawGrid() {
+    removeGrid();
+    drawGrid(gridSize);
+} 
+
 function randomNumberUpTo(number) {
     return Math.floor(Math.random() * number+1);
 }
 
-function draw() {
+function getColor() {
+    rainbowButton.classList.remove("active");
+    eraserButton.classList.remove("active");
+    darkenButton.classList.remove("active");
+    return colorPicker.value;
+}
 
-    let color = colorPicker.value;
-    let rainbowButtonClicks = 0;
-    colorPicker.addEventListener("input", () => {
-    color = colorPicker.value;
-    })
-
-    rainbowButton.addEventListener("click", () => {
-        if (rainbowButton > 1) rainbowButtonClicks = 0;
-        rainbowButtonClicks++;
-    })
-
-    const squares = document.querySelectorAll(".square");
-    
-    let holding = false;
-
-    gridContainer.addEventListener("mousedown", (e) => {
-        e.preventDefault();
-        holding = true;
-    });
-    gridContainer.addEventListener("mouseup", () => holding = false);
-    gridContainer.addEventListener("mouseleave", () => holding = false);
-
-    squares.forEach(square => {
-        square.addEventListener("mouseover", (e) => {
-            if (holding === true) {
-                if (rainbowButtonClicks % 2 === 0) {
-                    square.style.backgroundColor = color;
-                } else {
-                    e.currentTarget.style.backgroundColor = `rgb(${randomNumberUpTo(255)}, ${randomNumberUpTo(255)}, ${randomNumberUpTo(255)})`;
-                }
+function draw(targetElement) {
+    if (targetElement !== null && targetElement.classList.contains("square")) {
+        if (rainbowButton.classList.contains("active")) {
+            targetElement.style.backgroundColor = `rgb(${randomNumberUpTo(255)}, ${randomNumberUpTo(255)}, ${randomNumberUpTo(255)})`;
+        } else if (eraserButton.classList.contains("active")) {
+            targetElement.style.backgroundColor = "var(--square-bg-color)";
+            targetElement.style.filter = "brightness(100%)";
+        } else if (darkenButton.classList.contains("active")) {
+            if (targetElement.style.backgroundColor !== "var(--square-bg-color)") {
+                let brightness = +(targetElement.style.filter.slice(11,-2));
+                targetElement.style.filter = `brightness(${brightness - 10}%)`;
             }
-        })
-    });
+        } else {
+            targetElement.style.backgroundColor = getColor();
+        }
+    }
 }
 
-function changeGridSize() {
-    gridSizeRangeSlider.addEventListener("input", function() {
-    gridSize = this.value;
-    gridSizeText.innerText = `${gridSize} x ${gridSize}`;
-    })
+drawGrid(gridSize);
+gridSizeText.innerText = `${gridSize} x ${gridSize}`;
 
-    gridSizeRangeSlider.addEventListener("mouseup", function() {
-    removeGrid();
-    drawGrid(gridSize);
-    draw();
-    clear();
-    })
-}
+gridSizeRangeSlider.addEventListener("input", updateGridSize);
+gridSizeRangeSlider.addEventListener("mouseup", redrawGrid);
+gridSizeRangeSlider.addEventListener("touchend", redrawGrid);
 
-function clear() {
-    const squares = document.querySelectorAll(".square");
-    clearButton.addEventListener("click", () => {
-        squares.forEach(square => {
-            square.style.backgroundColor = "var(--white)";
-        });
-    })
-}
+colorPicker.addEventListener("input", getColor);
 
-function createGrid() {
-    let gridSize = gridSizeRangeSlider.value;
-    drawGrid(gridSize);
-    draw();
-    gridSizeText.innerText = `${gridSize} x ${gridSize}`;
+gridContainer.addEventListener("mouseup", () => isHoldingMouse = false);
+gridContainer.addEventListener("mouseleave", () => isHoldingMouse = false);
+gridContainer.addEventListener("mousedown", (e) => {
+    e.preventDefault();
+    isHoldingMouse = true;
+    draw(e.target);
+});
+gridContainer.addEventListener("mouseover", (e) => {
+    if (isHoldingMouse) {
+        draw(e.target);
+    }
+})
 
-    changeGridSize();
-    clear();
-}
+gridContainer.addEventListener("touchstart", (e) => {
+    e.preventDefault();
+    draw(e.target);
+})
+gridContainer.addEventListener("touchmove", (e) => {
+    e.preventDefault();
+    let x = e.touches[0].clientX;
+    let y = e.touches[0].clientY;
+    let targetElement = document.elementFromPoint(x, y);
 
-createGrid();
+    draw(targetElement);
+})
 
+rainbowButton.addEventListener("click", () => {
+    rainbowButton.classList.toggle("active");
+    darkenButton.classList.remove("active");
+    eraserButton.classList.remove("active");
+});
+darkenButton.addEventListener("click", () => {
+    darkenButton.classList.toggle("active");
+    rainbowButton.classList.remove("active");
+    eraserButton.classList.remove("active");
+});
+eraserButton.addEventListener("click", () => {
+    eraserButton.classList.toggle("active");
+    rainbowButton.classList.remove("active");
+    darkenButton.classList.remove("active");
+});
+clearButton.addEventListener("click", () => squares.forEach(square => {
+    square.style.backgroundColor = "var(--square-bg-color)"
+    square.style.filter = "brightness(100%)";
+}));
